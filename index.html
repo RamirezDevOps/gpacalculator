@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f2f2f2;
+            }
+    
+            h2 {
+                color: #333;
+            }
+    
+            form {
+                background-color: #fff;
+                border: 1px solid #ccc;
+                padding: 20px;
+                border-radius: 5px;
+                max-width: 500px;
+                margin: 0 auto;
+            }
+    
+            label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+            }
+    
+            input[type="number"],
+            input[type="text"],
+            select {
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-sizing: border-box;
+                margin-bottom: 10px;
+            }
+    
+            input[type="submit"] {
+                background-color: #4CAF50;
+                color: #fff;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+    
+            input[type="submit"]:hover {
+                background-color: #45a049;
+            }
+    
+            #gpaOutput {
+                font-weight: bold;
+                margin-top: 10px;
+            }
+        </style>
+        <title>GPA Calculator</title>
+    </head>
+<body>
+    <h2>GPA Calculator</h2>
+
+    <form id="gpaForm">
+        <label for="numGrades">Number of Grades:</label>
+        <input type="number" id="numGrades" name="numGrades" min="1" required><br>
+
+        <div id="classInputs"></div>
+
+        <input type="submit" value="Calculate">
+    </form>
+
+    <p id="gpaOutput"></p>
+
+    <script>
+        function generateClassInputs(numGrades) {
+            let classInputs = '';
+
+            for (let i = 1; i <= numGrades; i++) {
+                classInputs += `
+                    <label for="grades${i}">Grade ${i}:</label>
+                    <input type="text" id="grades${i}" name="grades${i}">
+                    <label for="credits${i}">Credit ${i}:</label>
+                    <input type="text" id="credits${i}" name="credits${i}">
+                    <label for="classTypes${i}">Class Type ${i}:</label>
+                    <select id="classTypes${i}" name="classTypes${i}">
+                        <option value="Dual Credit">Dual Credit</option>
+                        <option value="AP">AP</option>
+                        <option value="Honors">Honors</option>
+                        <option value="Regular">Regular</option>
+                    </select><br>
+                `;
+            }
+
+            return classInputs;
+        }
+
+        function calculateGPA(grades, credits, classTypes) {
+            let totalQualityPoints = 0;
+            let totalAttemptedCredits = 0;
+
+            for (let i = 0; i < grades.length; i++) {
+                let grade = grades[i];
+                let credit = credits[i];
+                let classType = classTypes[i].trim().toLowerCase();
+                let qualityPoint;
+
+                // Assign quality points based on the grade
+                if (grade >= 90) {
+                    qualityPoint = (classType === 'regular') ? 4 : (classType === 'honors') ? 5 : 6;
+                } else if (grade >= 80) {
+                    qualityPoint = (classType === 'regular') ? 3 : (classType === 'honors') ? 4 : 5;
+                } else if (grade >= 70) {
+                    qualityPoint = (classType === 'regular') ? 2 : (classType === 'honors') ? 3 : 4;
+                } else {
+                    qualityPoint = 0;
+                }
+
+                // Multiply the quality points by the attempted credit for the course
+                totalQualityPoints += qualityPoint * credit;
+                totalAttemptedCredits += credit;
+            }
+
+            // Calculate the GPA
+            let gpa = totalQualityPoints / totalAttemptedCredits;
+
+            return gpa;
+        }
+
+        document.getElementById('gpaForm').onsubmit = function (e) {
+            e.preventDefault();
+            let numGrades = document.getElementById('numGrades').value;
+            let grades = [];
+            let credits = [];
+            let classTypes = [];
+
+            for (let i = 1; i <= numGrades; i++) {
+                let gradeElement = document.getElementById('grades' + i);
+                let creditElement = document.getElementById('credits' + i);
+                let classTypeElement = document.getElementById('classTypes' + i);
+
+                if (gradeElement && creditElement && classTypeElement) {
+                    grades.push(Number(gradeElement.value));
+                    credits.push(Number(creditElement.value));
+                    classTypes.push(classTypeElement.value);
+                }
+            }
+
+            let gpa = calculateGPA(grades, credits, classTypes);
+            document.getElementById('gpaOutput').innerText = 'Your GPA is ' + gpa.toFixed(2);
+        };
+
+        document.getElementById('numGrades').addEventListener('change', function (e) {
+            let numGrades = e.target.value;
+            let classInputsContainer = document.getElementById('classInputs');
+            classInputsContainer.innerHTML = generateClassInputs(numGrades);
+        });
+    </script>
+</body>
+</html>
